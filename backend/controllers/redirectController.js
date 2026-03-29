@@ -5,24 +5,9 @@ const { getClientInfo } = require('../utils/analytics');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const PROTECTED_URL_COOKIE = 'protected_url_access';
-
-const getCookieValue = (req, cookieName) => {
-  const cookieHeader = req.headers.cookie;
-
-  if (!cookieHeader) {
-    return null;
-  }
-
-  const cookies = cookieHeader.split(';').map((cookie) => cookie.trim());
-  const targetCookie = cookies.find((cookie) => cookie.startsWith(`${cookieName}=`));
-
-  return targetCookie ? decodeURIComponent(targetCookie.split('=').slice(1).join('=')) : null;
-};
-
 const hasProtectedAccess = (req, shortCode) => {
   try {
-    const token = getCookieValue(req, PROTECTED_URL_COOKIE);
+    const token = req.query.access;
 
     if (!token) {
       return false;
@@ -75,14 +60,7 @@ exports.redirect = async (req, res) => {
           expiresIn: '5m'
         });
 
-        res.cookie(PROTECTED_URL_COOKIE, accessToken, {
-          httpOnly: true,
-          sameSite: 'lax',
-          secure: process.env.NODE_ENV === 'production',
-          maxAge: 5 * 60 * 1000
-        });
-
-        return res.json({ success: true });
+        return res.json({ success: true, accessToken });
       }
 
       if (!hasAccessCookie) {
@@ -119,14 +97,6 @@ exports.redirect = async (req, res) => {
     // Update user total clicks
     if (url.user) {
       await User.findByIdAndUpdate(url.user._id || url.user, { $inc: { totalClicks: 1 } });
-    }
-
-    if (url.password) {
-      res.clearCookie(PROTECTED_URL_COOKIE, {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production'
-      });
     }
 
     // Redirect to original URL

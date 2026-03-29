@@ -34,13 +34,19 @@ function ProtectedUrl() {
     setLoading(true);
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${process.env.REACT_APP_BASE_URL || 'http://localhost:5000'}/${shortCode}`,
-        { password },
-        { withCredentials: true }
+        { password }
       );
 
-      window.location.href = `${process.env.REACT_APP_BASE_URL || 'http://localhost:5000'}/${shortCode}`;
+      const accessToken = response.data?.accessToken;
+      const redirectUrl = new URL(`${process.env.REACT_APP_BASE_URL || 'http://localhost:5000'}/${shortCode}`);
+
+      if (accessToken) {
+        redirectUrl.searchParams.set('access', accessToken);
+      }
+
+      window.location.href = redirectUrl.toString();
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid password');
       setPassword('');
