@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import QRCode from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { AuthContext } from '../context/AuthContext';
 import './UrlShortener.css';
 
@@ -229,7 +229,7 @@ const UrlShortener = ({ isAuthenticated, onUrlCreated }) => {
           )}
 
           <div className="qr-section" id="qrCode">
-            <QRCode 
+            <QRCodeCanvas
               value={shortUrl.shortUrl} 
               size={200}
               level="H"
