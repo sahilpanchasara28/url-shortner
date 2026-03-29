@@ -2,12 +2,14 @@ import React, { createContext, useState, useCallback, useEffect } from 'react';
 import axios from 'axios';
 
 export const AuthContext = createContext();
+const apiBaseUrl = process.env.REACT_APP_API_URL || process.env.REACT_APP_BASE_URL || '';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(false);
 
+  axios.defaults.baseURL = apiBaseUrl;
   axios.defaults.headers.common['Authorization'] = token ? `Bearer ${token}` : '';
 
   useEffect(() => {
